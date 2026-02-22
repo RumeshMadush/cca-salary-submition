@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # PostgreSQL - Single database instance for ALL services
+  postgres:
+    image: postgres:15-alpine
+    container_name: tech-salary-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    networks:
+      - tech-salary-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin - Database Management UI
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: tech-salary-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@techsalary.com
+      PGADMIN_DEFAULT_PASSWORD: admin_password
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - tech-salary-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  tech-salary-network:
+    driver: bridge
