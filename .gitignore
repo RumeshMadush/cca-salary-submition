@@ -1,0 +1,55 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.npm
+.env
+.env.local
+.env.*.local
+
+# Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+.gradle/
+build/
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+*.log
+
+# Database
+*.sql.backup
+database/.env
+pgdata/
+mongodata/
+
+# Kubernetes
+*.secret.yaml
+
+# Build outputs
+dist/
+build/
+out/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Logs
+logs/
+*.log
