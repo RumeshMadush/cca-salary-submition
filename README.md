@@ -36,21 +36,21 @@ main
 │   ├── feature/m3-identity-service
 │   ├── feature/m4-bff-vote-service
 │   └── feature/m5-frontend-search
-└── prod       ← production — only merge from stg after testing passes
+└── main       ← production — only merge from stg after testing passes
 ```
 
 ### Branch Rules
 
 | Branch | Purpose | Who can merge |
 |--------|---------|--------------|
-| `prod` | Live production deployment on AKS | PR from `stg` only — all members approve |
+| `main` | Live production deployment on AKS | PR from `stg` only — all members approve |
 | `stg` | Staging — integration testing | PR from feature branches — 1 reviewer required |
 | `feature/m*-*` | Each member's personal work branch | You own it |
 
 ### ⚠️ Rules — Everyone Must Follow
 
-- ❌ **Never commit directly to `stg` or `prod`**
-- ❌ **Never force-push to `stg` or `prod`**
+- ❌ **Never commit directly to `stg` or `main`**
+- ❌ **Never force-push to `stg` or `main`**
 - ✅ **Always work on your own feature branch**
 - ✅ **Always open a Pull Request to merge into `stg`**
 - ✅ **At least 1 other member must review and approve your PR**
@@ -100,7 +100,7 @@ git push origin feature/m2-salary-service
 
 1. Go to the GitHub repository
 2. Click **"Compare & pull request"** on your branch
-3. Set the **base branch to `stg`** (not `main`, not `prod`)
+3. Set the **base branch to `stg`** (not `main`)
 4. Fill in the PR description using the template below
 5. Request a review from **at least 1 other team member**
 6. Once approved, **merge and delete your branch**
@@ -135,11 +135,11 @@ M[ ] — Name
 
 ### Step 5 — Merging `stg` → `prod`
 
-Once all features are integrated and tested on `stg`, **one PR** is opened from `stg` into `prod`. All 5 members should approve this PR before merging.
+Once all features are integrated and tested on `stg`, **one PR** is opened from `stg` into `main`. All 5 members should approve this PR before merging.
 
 ```bash
 # This is done as a team — do NOT do this alone
-# Open a PR on GitHub: stg → prod
+# Open a PR on GitHub: stg → main
 ```
 
 ---
@@ -511,7 +511,7 @@ curl "http://<EXTERNAL-IP>/api/stats?role=Software+Engineer"
 | Committing `.env` files | Add `.env` to `.gitignore` |
 | Using LoadBalancer for internal services | Use ClusterIP — only Ingress is public |
 | Connecting to `localhost:5432` in K8s | Use `postgres-service.data.svc.cluster.local` |
-| Committing directly to `stg` or `prod` | Always use a feature branch + PR |
+| Committing directly to `stg` or `main` | Always use a feature branch + PR |
 
 ---
 

@@ -1,0 +1,326 @@
+{
+	"info": {
+		"_postman_id": "salary-submission-service-collection",
+		"name": "Salary Submission Service API",
+		"description": "API collection for Salary Transparency Platform - Submission Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions/health",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions",
+						"health"
+					]
+				},
+				"description": "Health check endpoint for Kubernetes probes and monitoring"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Full Details",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"Google\",\n  \"jobTitle\": \"Senior Software Engineer\",\n  \"location\": \"Mountain View Office\",\n  \"country\": \"US\",\n  \"city\": \"Mountain View\",\n  \"yearsOfExperience\": 7,\n  \"baseSalary\": 185000.00,\n  \"bonus\": 35000.00,\n  \"stockOptions\": 75000.00,\n  \"otherCompensation\": 5000.00,\n  \"currency\": \"USD\",\n  \"employmentType\": \"Full-time\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Create a new salary submission with all compensation details. Data will be automatically anonymized."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Minimal",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"Meta\",\n  \"jobTitle\": \"Software Engineer\",\n  \"country\": \"US\",\n  \"yearsOfExperience\": 3,\n  \"baseSalary\": 145000.00\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Create a salary submission with only required fields"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Entry Level",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"Amazon\",\n  \"jobTitle\": \"Software Development Engineer\",\n  \"location\": \"Seattle Office\",\n  \"country\": \"US\",\n  \"city\": \"Seattle\",\n  \"yearsOfExperience\": 0,\n  \"baseSalary\": 112000.00,\n  \"bonus\": 15000.00,\n  \"stockOptions\": 25000.00,\n  \"otherCompensation\": 0,\n  \"currency\": \"USD\",\n  \"employmentType\": \"Full-time\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Create an entry-level salary submission (0-1 years experience)"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Lead Level",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"Microsoft\",\n  \"jobTitle\": \"Principal Engineer\",\n  \"location\": \"Redmond Campus\",\n  \"country\": \"US\",\n  \"city\": \"Redmond\",\n  \"yearsOfExperience\": 12,\n  \"baseSalary\": 225000.00,\n  \"bonus\": 50000.00,\n  \"stockOptions\": 125000.00,\n  \"otherCompensation\": 10000.00,\n  \"currency\": \"USD\",\n  \"employmentType\": \"Full-time\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Create a lead-level salary submission (11+ years experience)"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Sri Lanka",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"TechCorp Lanka\",\n  \"jobTitle\": \"Senior Software Engineer\",\n  \"location\": \"Colombo Office\",\n  \"country\": \"LK\",\n  \"city\": \"Colombo\",\n  \"yearsOfExperience\": 5,\n  \"baseSalary\": 2567890.00,\n  \"bonus\": 523456.00,\n  \"stockOptions\": 0,\n  \"otherCompensation\": 0,\n  \"currency\": \"LKR\",\n  \"employmentType\": \"Full-time\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Create a salary submission for Sri Lanka with LKR currency"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Contract",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"Apple\",\n  \"jobTitle\": \"iOS Developer\",\n  \"country\": \"US\",\n  \"city\": \"Cupertino\",\n  \"yearsOfExperience\": 4,\n  \"baseSalary\": 165000.00,\n  \"bonus\": 0,\n  \"stockOptions\": 0,\n  \"otherCompensation\": 0,\n  \"currency\": \"USD\",\n  \"employmentType\": \"Contract\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Create a salary submission for contract employment"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Salary Submission by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions/{{submission_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions",
+						"{{submission_id}}"
+					]
+				},
+				"description": "Retrieve a specific salary submission by ID. Set the submission_id variable after creating a submission."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Invalid (Missing Required Fields)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"TestCorp\",\n  \"baseSalary\": 100000.00\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Test validation - missing required fields (jobTitle, country). Should return 400 Bad Request."
+			},
+			"response": []
+		},
+		{
+			"name": "Create Salary Submission - Invalid (Negative Salary)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"company\": \"TestCorp\",\n  \"jobTitle\": \"Developer\",\n  \"country\": \"US\",\n  \"yearsOfExperience\": 3,\n  \"baseSalary\": -50000.00\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions"
+					]
+				},
+				"description": "Test validation - negative salary. Should return 400 Bad Request."
+			},
+			"response": []
+		},
+		{
+			"name": "Get Non-Existent Submission",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/salary-submissions/99999",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"salary-submissions",
+						"99999"
+					]
+				},
+				"description": "Test error handling - retrieve non-existent submission. Should return 404 Not Found."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "submission_id",
+			"value": "1",
+			"type": "string"
+		}
+	]
+}
