@@ -1,16 +1,5 @@
 # Vote Service Dockerfile
-# Multi-stage build for production optimization
 
-# Stage 1: Base
-FROM node:18-alpine AS base
-WORKDIR /app
-
-# Install dependencies only when needed
-FROM base AS deps
-COPY package*.json ./
-RUN npm ci --omit=dev
-
-# Stage 2: Production
 FROM node:18-alpine AS runner
 WORKDIR /app
 
@@ -18,8 +7,9 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 voteservice
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Install production dependencies
+COPY package.json ./
+RUN npm install --omit=dev
 
 # Copy application code
 COPY . .

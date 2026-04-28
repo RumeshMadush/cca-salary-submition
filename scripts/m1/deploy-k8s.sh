@@ -39,6 +39,9 @@ echo "Applying app config and secrets..."
 kubectl apply -f k8s/app/configmap.yaml
 kubectl apply -f k8s/app/app-secret.yaml
 
+echo "Applying services..."
+kubectl apply -f k8s/services/
+
 echo "Deploying app services..."
 kubectl apply -f k8s/app/
 

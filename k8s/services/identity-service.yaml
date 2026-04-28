@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: identity
+  namespace: app
+spec:
+  type: ClusterIP
+  selector:
+    app: identity
+  ports:
+    - port: 8082
+      targetPort: 8082

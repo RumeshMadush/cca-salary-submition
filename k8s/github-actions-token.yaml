@@ -1,0 +1,13 @@
+---
+# github-actions-token.yaml
+# Creates a long-lived token bound to the github-actions ServiceAccount.
+# After applying, extract with:
+#   kubectl get secret github-actions-token -n app -o jsonpath='{.data.token}' | base64 -d
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-actions-token
+  namespace: app
+  annotations:
+    kubernetes.io/service-account.name: github-actions
+type: kubernetes.io/service-account-token

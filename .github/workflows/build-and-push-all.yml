@@ -1,0 +1,260 @@
+name: Build and Push All Services
+
+on:
+  push:
+    branches: [ ci_cd_pipeline_setup, main ]
+    paths:
+      - 'services/**'
+
+  # -------------------------------------------------------
+  # Manual trigger — pick services and optional tag
+  # -------------------------------------------------------
+  workflow_dispatch:
+    inputs:
+      services:
+        description: 'Services to build & deploy (comma-separated). Leave empty to auto-detect from changed files. Example: bff,identity,frontend'
+        required: false
+        default: ''
+      image_tag:
+        description: 'Custom image tag (e.g. 202604261119). Leave empty to auto-generate timestamp tag.'
+        required: false
+        default: ''
+      skip_build:
+        description: 'Skip build and deploy existing image tag only (true/false)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+env:
+  REGISTRY: docker.io
+  DOCKERHUB_USERNAME: nuwan1998
+  DOCKERHUB_REPO: nuwan1998/cca-salary-submition
+  ALL_SERVICES: '["bff","frontend","identity","salary-submission","search","stats","vote"]'
+
+jobs:
+  # -------------------------------------------------------
+  # JOB 1: Detect which services changed OR use manual input
+  # -------------------------------------------------------
+  detect-changes:
+    name: Detect Changed Services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.resolve.outputs.services }}
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+      skip_build: ${{ steps.resolve.outputs.skip_build }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed services (auto — push trigger only)
+        uses: dorny/paths-filter@v3
+        id: filter
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            bff:
+              - 'services/bff/**'
+            frontend:
+              - 'services/frontend/**'
+            identity:
+              - 'services/identity/**'
+            salary-submission:
+              - 'services/salary-submission/**'
+            search:
+              - 'services/search/**'
+            stats:
+              - 'services/stats/**'
+            vote:
+              - 'services/vote/**'
+
+      - name: Resolve services and tag
+        id: resolve
+        run: |
+          # ---- Resolve which services to process ----
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.services }}" ]; then
+            # Manual input — convert comma-separated string to JSON array
+            # e.g. "bff,identity" → ["bff","identity"]
+            INPUT="${{ github.event.inputs.services }}"
+            SERVICES=$(echo "$INPUT" | tr ',' '\n' | tr -d ' ' | jq -R . | jq -cs .)
+            echo "Manual trigger — services: $SERVICES"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -z "${{ github.event.inputs.services }}" ]; then
+            # Manual trigger with no services specified — deploy ALL
+            SERVICES="${{ env.ALL_SERVICES }}"
+            echo "Manual trigger (no input) — deploying all: $SERVICES"
+          else
+            # Push trigger — use dorny/paths-filter output
+            SERVICES='${{ steps.filter.outputs.changes }}'
+            echo "Push trigger — changed services: $SERVICES"
+          fi
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
+          # ---- Resolve image tag ----
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            TAG="${{ github.event.inputs.image_tag }}"
+            echo "Using custom tag: $TAG"
+          else
+            TAG="$(date +'%Y%m%d%H%M')"
+            echo "Generated tag: $TAG"
+          fi
+          echo "image_tag=$TAG" >> $GITHUB_OUTPUT
+
+          # ---- Skip build flag ----
+          echo "skip_build=${{ github.event.inputs.skip_build || 'false' }}" >> $GITHUB_OUTPUT
+
+  # -------------------------------------------------------
+  # JOB 2: Build & push
+  # -------------------------------------------------------
+  build-and-push:
+    name: Build & Push - ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.services != '[]' && needs.detect-changes.outputs.skip_build == 'false' }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v5
+        with:
+          context: services/${{ matrix.service }}
+          push: true
+          # Tag format: nuwan1998/cca-salary-submition:bff-202604261119
+          tags: ${{ env.DOCKERHUB_REPO }}:${{ matrix.service }}-${{ needs.detect-changes.outputs.image_tag }}
+          # Pass VITE_API_URL only for frontend — ignored by other Dockerfiles
+          build-args: |
+            VITE_API_URL=${{ matrix.service == 'frontend' && secrets.VITE_API_URL || '' }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}
+
+  # -------------------------------------------------------
+  # JOB 3: Deploy to MicroK8s
+  # Runs after build-and-push, OR directly if skip_build=true
+  # -------------------------------------------------------
+  deploy:
+    name: Deploy to MicroK8s (EC2)
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-and-push]
+    # Run if build succeeded OR if build was skipped (skip_build=true)
+    if: |
+      always() &&
+      needs.detect-changes.outputs.services != '[]' &&
+      github.event_name != 'pull_request' &&
+      (needs.build-and-push.result == 'success' || needs.detect-changes.outputs.skip_build == 'true')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubeconfig
+        # KEY FIX: use env vars to pass secrets into shell safely
+        # Never use heredoc with GitHub secrets — the ${{ }} gets evaluated
+        # as a shell command if the heredoc delimiter is unquoted
+        env:
+          KUBE_API_SERVER: ${{ secrets.KUBE_API_SERVER }}
+          KUBE_TOKEN: ${{ secrets.KUBE_TOKEN }}
+          KUBE_CA_CERT: ${{ secrets.KUBE_CA_CERT }}
+        run: |
+          mkdir -p $HOME/.kube
+
+          # Write kubeconfig using env vars — safe, no shell interpretation issues
+          kubectl config set-cluster microk8s \
+            --server="${KUBE_API_SERVER}" \
+            --insecure-skip-tls-verify=true
+
+          kubectl config set-credentials github-actions \
+            --token="${KUBE_TOKEN}"
+
+          kubectl config set-context microk8s \
+            --cluster=microk8s \
+            --user=github-actions \
+            --namespace=app
+
+          kubectl config use-context microk8s
+
+          chmod 600 $HOME/.kube/config
+          echo "Kubeconfig written successfully."
+
+      - name: Verify cluster connection
+        run: |
+          kubectl get nodes
+          kubectl get pods -n app
+
+      - name: Apply k8s manifests for selected services
+        run: |
+          SERVICES='${{ needs.detect-changes.outputs.services }}'
+
+          declare -A DEPLOYMENT_FILES
+          DEPLOYMENT_FILES["bff"]="k8s/app/bff-deployment.yaml"
+          DEPLOYMENT_FILES["frontend"]="k8s/app/frontend-deployment.yaml"
+          DEPLOYMENT_FILES["identity"]="k8s/app/identity-deployment.yaml"
+          DEPLOYMENT_FILES["salary-submission"]="k8s/app/salary-submission-deployment.yaml"
+          DEPLOYMENT_FILES["search"]="k8s/app/search-deployment.yaml"
+          DEPLOYMENT_FILES["stats"]="k8s/app/stats-deployment.yaml"
+          DEPLOYMENT_FILES["vote"]="k8s/app/vote-deployment.yaml"
+
+          echo "$SERVICES" | jq -r '.[]' | while read svc; do
+            FILE="${DEPLOYMENT_FILES[$svc]}"
+            if [ -f "$FILE" ]; then
+              echo "Applying manifest: $FILE"
+              kubectl apply -f "$FILE"
+            else
+              echo "Warning: manifest not found for $svc at $FILE"
+            fi
+          done
+
+      - name: Update image tags for selected services
+        run: |
+          SERVICES='${{ needs.detect-changes.outputs.services }}'
+          TAG="${{ needs.detect-changes.outputs.image_tag }}"
+
+          echo "$SERVICES" | jq -r '.[]' | while read svc; do
+            IMAGE="${{ env.DOCKERHUB_REPO }}:${svc}-${TAG}"
+            echo "Updating $svc → $IMAGE"
+            kubectl set image deployment/${svc} \
+              ${svc}=${IMAGE} \
+              -n app
+          done
+
+      - name: Wait for rollouts
+        run: |
+          SERVICES='${{ needs.detect-changes.outputs.services }}'
+
+          echo "$SERVICES" | jq -r '.[]' | while read svc; do
+            echo "Waiting for rollout: $svc ..."
+            kubectl rollout status deployment/${svc} \
+              -n app \
+              --timeout=180s
+          done
+
+      - name: Deployment summary
+        if: always()
+        run: |
+          echo "=============================="
+          echo " Deployment Summary"
+          echo " Tag: ${{ needs.detect-changes.outputs.image_tag }}"
+          echo " Services: ${{ needs.detect-changes.outputs.services }}"
+          echo "=============================="
+          kubectl --kubeconfig=$HOME/.kube/config get pods -n app    || echo "Could not reach cluster"
+          kubectl --kubeconfig=$HOME/.kube/config get pods -n data   || echo "Could not reach cluster"
+          kubectl --kubeconfig=$HOME/.kube/config get ingress -n app || echo "Could not reach cluster"

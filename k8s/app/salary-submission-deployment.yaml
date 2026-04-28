@@ -17,13 +17,15 @@ spec:
     spec:
       containers:
         - name: salary-submission
-          image: techsalary-local/salary-submission:latest
+          image: nuwan1998/cca-salary-submition:salary-submission-202604261119
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081
           env:
             - name: SERVER_PORT
               value: "8081"
+            - name: LOG_LEVEL
+              value: "ERROR"
             - name: SPRING_PROFILES_ACTIVE
               value: k8s
           envFrom:
@@ -31,6 +33,13 @@ spec:
                 name: app-config
             - secretRef:
                 name: app-secret
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "384Mi"
+            limits:
+              cpu: "600m"
+              memory: "768Mi"
           readinessProbe:
             tcpSocket:
               port: 8081
@@ -41,16 +50,3 @@ spec:
               port: 8081
             initialDelaySeconds: 30
             periodSeconds: 20
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: salary-submission
-  namespace: app
-spec:
-  type: ClusterIP
-  selector:
-    app: salary-submission
-  ports:
-    - port: 8081
-      targetPort: 8081

@@ -29,9 +29,10 @@ app.get('/health', (req, res) => {
 
 // Rate limiting (excludes /health above)
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 100,
   message: 'Too many requests from this IP, please try again later.',
+  skip: (req) => req.path === '/health',
 });
 app.use(limiter);
 
