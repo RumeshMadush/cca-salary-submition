@@ -2,6 +2,18 @@ const express = require('express');
 const axios = require('axios');
 const router = express.Router();
 
+// Simple in-memory TTL cache
+const cache = new Map();
+function cacheGet(key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { cache.delete(key); return null; }
+  return entry.data;
+}
+function cacheSet(key, data, ttlMs) {
+  cache.set(key, { data, expiresAt: Date.now() + ttlMs });
+}
+
 // Service URLs from environment
 const IDENTITY_URL = process.env.IDENTITY_URL || 'http://localhost:3001';
 const SALARY_URL = process.env.SALARY_URL || 'http://localhost:3002';
@@ -138,10 +150,14 @@ router.get('/submissions/:id', async (req, res) => {
  */
 router.get('/search', async (req, res) => {
   try {
-    // Forward query parameters
     const queryString = new URLSearchParams(req.query).toString();
+    const cacheKey = `search:${queryString}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
     const path = `/api/v1/search${queryString ? '?' + queryString : ''}`;
     const response = await proxyRequest(SEARCH_URL, path, 'GET');
+    cacheSet(cacheKey, response.data, 60_000); // 1 minute
     res.status(response.status).json(response.data);
   } catch (error) {
     res.status(error.status || 500).json(error.data);
@@ -155,8 +171,13 @@ router.get('/search', async (req, res) => {
 router.get('/stats', async (req, res) => {
   try {
     const queryString = new URLSearchParams(req.query).toString();
+    const cacheKey = `stats:${queryString}`;
+    const cached = cacheGet(cacheKey);
+    if (cached) return res.json(cached);
+
     const path = `/api/stats${queryString ? '?' + queryString : ''}`;
     const response = await proxyRequest(STATS_URL, path, 'GET');
+    cacheSet(cacheKey, response.data, 5 * 60_000); // 5 minutes
     res.status(response.status).json(response.data);
   } catch (error) {
     res.status(error.status || 500).json(error.data);
