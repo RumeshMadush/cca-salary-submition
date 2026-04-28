@@ -14,15 +14,22 @@ export function meta() {
 
 export default function Home() {
   const [records, setRecords] = useState<SalaryRecord[]>([]);
+  const [approvedRecords, setApprovedRecords] = useState<SalaryRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    api
+    const statsPromise = api
       .get<SalaryRecord[]>("/api/submissions")
-      .then(setRecords)
-      .catch((err) => setError(err.message ?? "Failed to load records"))
-      .finally(() => setLoading(false));
+      .then((data) => setRecords(Array.isArray(data) ? data : []))
+      .catch((err) => setError(err.message ?? "Failed to load records"));
+
+    const tablePromise = api
+      .get<{ results: SalaryRecord[] }>("/api/search?limit=10")
+      .then((data) => setApprovedRecords(data?.results ?? []))
+      .catch(() => {});
+
+    Promise.all([statsPromise, tablePromise]).finally(() => setLoading(false));
   }, []);
 
   const total = records.length;
@@ -72,9 +79,9 @@ export default function Home() {
 
       <div className="bg-slate-900 rounded-2xl border border-slate-800">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
-          <h2 className="text-base font-semibold text-white">Recent Submissions</h2>
+          <h2 className="text-base font-semibold text-white">Recent Approved Submissions</h2>
           {!loading && (
-            <span className="text-xs text-slate-500">{records.length} total</span>
+            <span className="text-xs text-slate-500">{approvedRecords.length} shown</span>
           )}
         </div>
         <div className="px-6 py-4">
@@ -85,7 +92,7 @@ export default function Home() {
           ) : error ? (
             <Alert message={error} />
           ) : (
-            <SalaryTable records={records.slice(0, 10)} />
+            <SalaryTable records={approvedRecords} />
           )}
         </div>
       </div>

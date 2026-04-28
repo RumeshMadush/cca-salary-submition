@@ -47,6 +47,9 @@ export class SalarySubmission {
   @Column({ name: 'employment_type', nullable: true })
   employmentType: string;
 
+  @Column({ default: false })
+  anonymize: boolean;
+
   @Column({ default: 'PENDING' })
   status: string;
 

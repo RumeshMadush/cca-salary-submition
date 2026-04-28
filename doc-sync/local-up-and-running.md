@@ -13,6 +13,7 @@ Docker Desktop's built-in Kubernetes cluster.
 2. Confirm the context is correct:
 
 ```bash
+kubectl config get-contexts
 kubectl config current-context
 # must print: docker-desktop
 

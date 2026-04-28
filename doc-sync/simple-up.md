@@ -11,6 +11,8 @@ docker build -t techsalary-local/frontend:latest           services/frontend/
 
 # 2. Apply K8s manifests
 kubectl apply -f k8s/namespace.yaml
+
+docker pull postgres:15
 kubectl apply -f k8s/postgres/
 kubectl apply -f k8s/app/
 
