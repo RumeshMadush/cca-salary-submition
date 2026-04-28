@@ -21,6 +21,8 @@ POD=$(kubectl get pod -n data -l app=postgres -o jsonpath='{.items[0].metadata.n
 kubectl exec -i -n data $POD -- psql -U salaryapp -d salarydb < db/init.sql
 
 # 4. Apply ingress
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+  
 kubectl apply -f k8s/ingress.yaml
 
 # 5. Start port-forward (keep running in a separate terminal)

@@ -8,5 +8,6 @@ export default [
     route("submit", "routes/submit.tsx"),
     route("stats", "routes/stats.tsx"),
     route("salary/:id", "routes/salary-detail.tsx"),
+    route("admin", "routes/admin.tsx"),
   ]),
 ] satisfies RouteConfig;

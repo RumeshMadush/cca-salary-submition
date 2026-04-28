@@ -40,6 +40,7 @@ export function Navbar() {
           <NavLink to="/" label="Dashboard" />
           <NavLink to="/submit" label="Submit" />
           <NavLink to="/stats" label="Stats" />
+          <NavLink to="/admin" label="Admin" />
           <button
             onClick={handleLogout}
             className="text-sm font-medium text-slate-400 transition-colors hover:text-rose-400"

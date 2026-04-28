@@ -17,10 +17,20 @@ app.use(cors({
   credentials: true,
 }));
 
-// Rate limiting
+// Health check — must be before rate limiter so k8s probes are never throttled
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    service: 'bff-service',
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Rate limiting (excludes /health above)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 100,
   message: 'Too many requests from this IP, please try again later.',
 });
 app.use(limiter);
@@ -33,16 +43,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
-});
-
-// Health check
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    service: 'bff-service',
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-  });
 });
 
 // Routes

@@ -4,6 +4,7 @@ const { authenticateToken } = require('../middleware/auth');
 const router = express.Router();
 
 // Service URLs from environment
+const SALARY_URL = process.env.SALARY_URL || 'http://localhost:3002';
 const VOTE_URL = process.env.VOTE_URL || 'http://localhost:3005';
 
 /**
@@ -59,6 +60,24 @@ const proxyRequest = async (serviceUrl, path, method, data, headers = {}) => {
 // ========================================
 // PROTECTED ROUTES (JWT authentication required)
 // ========================================
+
+/**
+ * PATCH /api/submissions/:id/status
+ * Update submission status (admin action — requires authentication)
+ */
+router.patch('/submissions/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const response = await proxyRequest(
+      SALARY_URL,
+      `/api/salary-submissions/${req.params.id}/status`,
+      'PATCH',
+      req.body,
+    );
+    res.status(response.status).json(response.data);
+  } catch (error) {
+    res.status(error.status || 500).json(error.data);
+  }
+});
 
 /**
  * POST /api/votes
