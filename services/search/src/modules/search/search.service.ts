@@ -27,6 +27,7 @@ export class SearchService {
     }
 
     if (query.company) {
+      qb.andWhere('s.anonymize = false');
       qb.andWhere('LOWER(s.company) LIKE LOWER(:company)', {
         company: `%${query.company}%`,
       });
@@ -66,8 +67,12 @@ export class SearchService {
 
     const [results, total] = await qb.getManyAndCount();
 
+    const masked = results.map((r) =>
+      r.anonymize ? { ...r, company: 'Anonymous' } : r,
+    );
+
     return {
-      results,
+      results: masked,
       pagination: {
         total,
         page,

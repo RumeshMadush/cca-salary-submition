@@ -20,6 +20,7 @@ export interface SalaryRecord {
   totalCompensation?: number;
   currency: string;
   employmentType?: string;
+  anonymize?: boolean;
   status: string;
   createdAt?: string;
   updatedAt?: string;

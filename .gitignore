@@ -114,3 +114,5 @@ AGENT.md
 
 # Frontend lockfile is used by the Docker build
 !services/frontend/package-lock.json
+
+final_report

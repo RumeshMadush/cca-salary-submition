@@ -233,6 +233,7 @@ CREATE TRIGGER trg_votes_updated_at
 
 INSERT INTO identity.users (username, email, password, first_name, last_name, is_active)
 VALUES
+  ('admin',       'admin@example.com', '$2a$10$ta5NUawGJuT8u/v05l0/h.wlR281JfFZbCrufP7n2IvD9Ntb/au7G', 'Admin', 'User',    TRUE),
   ('alice_smith', 'alice@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/tvQe', 'Alice', 'Smith', TRUE),
   ('bob_johnson', 'bob@example.com',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/tvQe', 'Bob',   'Johnson', TRUE),
   ('carol_white', 'carol@example.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcg7b3XeKeUxWdeS86E36P4/tvQe', 'Carol', 'White',   TRUE)
