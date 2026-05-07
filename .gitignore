@@ -116,3 +116,4 @@ AGENT.md
 !services/frontend/package-lock.json
 
 final_report
+k8s/local
